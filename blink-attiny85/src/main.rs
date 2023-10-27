@@ -7,10 +7,10 @@ use panic_halt as _;
 fn main() -> ! {
     //get peripherals
     let dp = arduino_hal::Peripherals::take().unwrap();
-    let pins = arduino_hal::pins!(dp);
-
-    //get pin 1 and set to output
-    let mut led = pins.d1.into_output();
+    //get pin 1
+    let led = arduino_hal::pins!(dp).d1;
+    //set pin to output
+    let mut led = led.into_output();
 
     loop {
         //togle led
