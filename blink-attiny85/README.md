@@ -1,6 +1,6 @@
 
 ## info
-en [[https://github.com/Rahix/avr-hal/tree/main][avr-hal]] (github) se pueden encontrar los requisitos y la forma de crear el proyecto
+en [av-hal](https://github.com/Rahix/avr-hal/tree/main) (github) se pueden encontrar los requisitos y la forma de crear el proyecto
 
 ## requisitos 
   ```bash
