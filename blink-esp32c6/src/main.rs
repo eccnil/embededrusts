@@ -1,3 +1,4 @@
+// ESP32c6
 use std::time::Duration;
 use esp_idf_svc::hal::{gpio, peripherals};
 
