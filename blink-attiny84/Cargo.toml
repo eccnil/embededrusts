@@ -1,0 +1,40 @@
+[package]
+name = "blink-attiny84"
+version = "0.1.0"
+authors = ["eccnil <eccnil@gmail.com>"]
+edition = "2021"
+license = "MIT OR Apache-2.0"
+
+[[bin]]
+name = "blink-attiny84"
+test = false
+bench = false
+
+[dependencies]
+panic-halt = "0.2.0"
+ufmt = "0.2.0"
+nb = "1.1.0"
+embedded-hal = "0.2.7"
+avr-device-macros = "0.5.2"
+
+[dependencies.avr-device]
+version = "0.5.2"
+features = ["attiny84"]
+
+[dependencies.attiny-hal]
+git = "https://github.com/rahix/avr-hal"
+features = ["attiny84"]
+
+
+# Configure the build for minimal size - AVRs have very little program memory
+[profile.dev]
+panic = "abort"
+lto = true
+opt-level = "s"
+
+[profile.release]
+panic = "abort"
+codegen-units = 1
+debug = true
+lto = true
+opt-level = "s"
