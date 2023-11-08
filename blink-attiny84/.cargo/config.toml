@@ -2,7 +2,7 @@
 target = "avr-specs/avr-attiny84.json"
 
 [target.'cfg(target_arch = "avr")']
-runner = "ravedude trinket"
+runner = "avrdude -c usbtiny -p attiny84 -Uflash:w:target/avr-attiny84/debug/blink-attiny84.elf"
 
 [unstable]
 build-std = ["core"]

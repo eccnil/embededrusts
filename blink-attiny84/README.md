@@ -9,9 +9,12 @@ brew tap osx-cross/avr
 brew install avr-gcc avrdude
 cargo +stable install ravedude
   ```
-## para crear un proyecto 
-  ```bash
-cargo install cargo-generate
-cargo generate --git https://github.com/Rahix/avr-hal-template.git
-  ```
-	- cuando pregunte por la placa: un attiny85 equivale a un **Adafruit Trinket**
+
+## run 
+this project cannot be flashed with rarvedude but wit avrdude
+
+```bash
+cargo build && avrdude -c usbtiny -p attiny84 -Uflash:w:target/avr-attiny84/debug/blink-attiny84.elf
+```
+
+`cargo run`` can be used als``

@@ -60,7 +60,6 @@ name = "blink-attiny84"
 version = "0.1.0"
 dependencies = [
  "attiny-hal",
- "avr-device",
  "avr-device-macros",
  "embedded-hal",
  "nb 1.1.0",

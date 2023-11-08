@@ -17,7 +17,7 @@ fn main() -> ! {
     //set pin to output
     let mut led = led.into_output();
     //setup delay
-    let mut delay = hal::delay::Delay::<hal::clock::MHz16>::new();
+    let mut delay = hal::delay::Delay::<hal::clock::MHz1>::new();
 
     loop {
         //togle led
