@@ -11,10 +11,9 @@ cargo +stable install ravedude
   ```
 
 ## run 
-this project cannot be flashed with rarvedude but wit avrdude
 
 ```bash
 cargo build && avrdude -c usbtiny -p attiny84 -Uflash:w:target/avr-attiny84/debug/blink-attiny84.elf
 ```
 
-`cargo run`` can be used als``
+tambien se puede usar `cargo run`
