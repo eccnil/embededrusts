@@ -5,7 +5,7 @@ version = 3
 [[package]]
 name = "attiny-hal"
 version = "0.1.0"
-source = "git+https://github.com/rahix/avr-hal#06ad11ffdbc64b1e0e43c4910be4110d488662e1"
+source = "git+https://github.com/rahix/avr-hal?rev=06ad11ffdbc64b1e0e43c4910be4110d488662e1#06ad11ffdbc64b1e0e43c4910be4110d488662e1"
 dependencies = [
  "avr-device",
  "avr-hal-generic",
@@ -36,7 +36,7 @@ dependencies = [
 [[package]]
 name = "avr-hal-generic"
 version = "0.1.0"
-source = "git+https://github.com/rahix/avr-hal#06ad11ffdbc64b1e0e43c4910be4110d488662e1"
+source = "git+https://github.com/rahix/avr-hal?rev=06ad11ffdbc64b1e0e43c4910be4110d488662e1#06ad11ffdbc64b1e0e43c4910be4110d488662e1"
 dependencies = [
  "avr-device",
  "cfg-if 0.1.10",
@@ -61,6 +61,7 @@ version = "0.1.0"
 dependencies = [
  "attiny-hal",
  "avr-device-macros",
+ "avr-hal-generic",
  "embedded-hal",
  "nb 1.1.0",
  "panic-halt",

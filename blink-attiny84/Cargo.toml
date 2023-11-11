@@ -23,7 +23,12 @@ avr-device-macros = "0.5.2"
 
 [dependencies.attiny-hal]
 git = "https://github.com/rahix/avr-hal"
+rev = "06ad11ffdbc64b1e0e43c4910be4110d488662e1"
 features = ["attiny84"]
+
+[dependencies.avr-hal-generic]
+git = "https://github.com/rahix/avr-hal"
+rev = "06ad11ffdbc64b1e0e43c4910be4110d488662e1"
 
 
 # Configure the build for minimal size - AVRs have very little program memory
