@@ -1,8 +1,6 @@
 #![no_std]
 #![no_main]
 
-use std::thread::yield_now;
-
 use esp_idf_svc::hal::{gpio, peripherals, delay::Delay};
 
 #[no_mangle]

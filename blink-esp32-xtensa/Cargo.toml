@@ -5,6 +5,7 @@ authors = ["eccnil <eccnil@gmail.com>"]
 edition = "2021"
 resolver = "2"
 rust-version = "1.71"
+default-run = "blink-esp32-xtensa"
 
 [profile.release]
 opt-level = "s"

@@ -4,6 +4,7 @@ version = "0.1.0"
 authors = ["eccnil <eccnil@gmail.com>"]
 edition = "2021"
 license = "MIT OR Apache-2.0"
+default-run = "blink-attiny84"
 
 [[bin]]
 name = "blink-attiny84"
