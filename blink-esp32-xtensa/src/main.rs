@@ -1,10 +1,28 @@
+#![no_std]
+#![no_main]
+
+use std::thread::yield_now;
+
+use esp_idf_svc::hal::{gpio, peripherals, delay::Delay};
+
+#[no_mangle]
 fn main() {
     // It is necessary to call this function once. Otherwise some patches to the runtime
     // implemented by esp-idf-sys might not link properly. See https://github.com/esp-rs/esp-idf-template/issues/71
     esp_idf_svc::sys::link_patches();
 
-    // Bind the log crate to the ESP Logging facilities
-    esp_idf_svc::log::EspLogger::initialize_default();
+    //get peripherals
+    let peripherals = peripherals::Peripherals::take().unwrap();
+    //get pin 23
+    let led = peripherals.pins.gpio5;
+    //set pin to output
+    let mut led = gpio::PinDriver::output(led).unwrap();
 
-    log::info!("Hello, world!");
+    loop {
+        //toggle led
+        led.toggle().unwrap();
+        //sleep (with core)
+        Delay::new_default().delay_ms(1000);
+    }
+
 }
