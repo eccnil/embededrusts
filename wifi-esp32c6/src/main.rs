@@ -1,8 +1,20 @@
-use std::{thread::sleep, time::Duration};
+use std::{
+    thread::{self, sleep},
+    time::Duration,
+};
 
-use embedded_svc::wifi::{AuthMethod, ClientConfiguration, Configuration};
+use embedded_svc::{
+    mqtt::client::{Event, QoS},
+    wifi::{AuthMethod, ClientConfiguration, Configuration},
+};
 use esp_idf_hal::peripherals::Peripherals;
-use esp_idf_svc::{eventloop::EspSystemEventLoop, nvs::EspDefaultNvsPartition, wifi::EspWifi};
+use esp_idf_svc::{
+    eventloop::EspSystemEventLoop,
+    mqtt::client::{EspMqttClient, EspMqttEvent, MqttClientConfiguration},
+    nvs::EspDefaultNvsPartition,
+    wifi::EspWifi,
+};
+use log::error;
 use toml_cfg::toml_config;
 
 #[toml_config]
@@ -58,4 +70,38 @@ fn main() {
     }
     let ip = wifi.sta_netif().get_ip_info().unwrap();
     log::info!("{:?}", ip);
+
+    //mqtt client creation
+    let mqtt_config = MqttClientConfiguration {
+        client_id: "esptest".into(),
+        ..Default::default()
+    };
+    let (mut mqtt_client, mut mqtt_connection) =
+        EspMqttClient::new(setup.mqtt_server, &mqtt_config).unwrap();
+
+    thread::spawn(move || {
+        log::info!("entering mqtt loop");
+        while let msg = mqtt_connection.next() {
+            match msg {
+                Err(e) => log::error!("mqtt message error {}", e),
+                Ok(m) => log::info!("mqtt event: {:?}", m.payload()),
+            }
+        }
+        log::warn!("exiting mqtt loop");
+    });
+
+    //subscribe to something
+    mqtt_client.subscribe("EspNow/gw/radar", QoS::AtLeastOnce);
+
+    //publish something
+    let publication_result =
+        mqtt_client.publish("hellotest", QoS::AtLeastOnce, false, "hello".as_bytes());
+    match publication_result {
+        Ok(r) => log::info!("publication ok {r}"),
+        Err(x) => log::error!("publication failed {:?}", x),
+    }
+
+    loop {
+        sleep(Duration::from_secs(1));
+    }
 }
