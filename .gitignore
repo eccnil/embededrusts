@@ -4,3 +4,5 @@ blink-attiny85/avr-specs
 blink-attiny85/LICENSE-MIT
 blink-rpipico/.vscode/settings.json
 .DS_Store
+bar/target
+wifi-esp32c6/cfg.toml
