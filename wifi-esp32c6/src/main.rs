@@ -52,7 +52,7 @@ fn main() {
     )
     .unwrap();
 
-    connect_mqtt(setup.mqtt_server, "esptest");
+    let _client = connect_mqtt(setup.mqtt_server, "esptest");
 
     loop {
         sleep(Duration::from_millis(100));
@@ -64,7 +64,7 @@ fn main() {
 //TODO:    devolver una estructura con la funcion, el cliente y la conexión
 //TODO: comprobar si el hilo creado muere o no cuando matamos el hilo principal
 //TODO: aceptar una funcion como parametro que atienda las subscripciones
-fn connect_mqtt(server: &str, client_name: &str) {
+fn connect_mqtt<'a>(server: &'a str, client_name: &'a str) -> EspMqttClient<'a> {
     //mqtt client creation
     let mqtt_config = MqttClientConfiguration {
         client_id: client_name.into(),
@@ -93,6 +93,7 @@ fn connect_mqtt(server: &str, client_name: &str) {
         Ok(r) => log::info!("publication ok {r}"),
         Err(x) => log::error!("publication failed {:?}", x),
     }
+    mqtt_client //client needs to be returned to avoid it being disposed
 }
 
 fn wifi_sync_connect<'a>(
