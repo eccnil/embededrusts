@@ -37,31 +37,49 @@ fn main() {
     // geting setup (passwords and config)
     let setup: Setup = SETUP;
     log::info!("config gets {}, mqtt {}", setup.ssid, setup.mqtt_server);
+    let ssid = &setup.ssid;
+    let password = &setup.password;
 
     //taking singletone things
     let peripherals = Peripherals::take().unwrap();
     let sysloop = EspSystemEventLoop::take().unwrap();
     let nvs = EspDefaultNvsPartition::take().unwrap();
+    let modem = peripherals.modem;
 
-    let _wifi = wifi_sync_connect(
-        peripherals.modem,
-        sysloop,
-        nvs,
-        &setup.ssid,
-        &setup.password,
-    )
-    .unwrap();
+    let _wifi = wifi_sync_connect(modem, sysloop, nvs, ssid, password).unwrap();
 
-    let _client = connect_mqtt(setup.mqtt_server, "esptest");
+    let mut client = connect_mqtt(setup.mqtt_server, "esptest");
+
+    // publish something
+    let publication_result = client.publish(
+        "my_topic",
+        QoS::AtLeastOnce,
+        false,
+        "hello world".as_bytes(),
+    );
+    match publication_result {
+        Ok(r) => log::info!("publication ok {r}"),
+        Err(x) => log::error!("publication failed {:?}", x),
+    }
 
     loop {
         sleep(Duration::from_millis(100));
     }
 }
 
+/// Connects to mqtt server.
+///
+/// * It requires being already connected to a network (ie: wife).
+/// * Then it waits (blocking) until the connection is performed.
+/// * A new thread (in eventloop) is created to attend the connection in the background
+///
+/// # example
+///
+/// ```  
+///    let mut client = connect_mqtt("mqtt://192.168.0.100", "my_client_name");
+///    client.publish ("my_topic", QoS::AtLeastOnce, false, "hello world".as_bytes()).unwrap();
+/// ```
 //TODO: como parametro una lista de topics
-//TODO: devolver una funcion para hacer pushs
-//TODO:    devolver una estructura con la funcion, el cliente y la conexión
 //TODO: comprobar si el hilo creado muere o no cuando matamos el hilo principal
 //TODO: aceptar una funcion como parametro que atienda las subscripciones
 fn connect_mqtt<'a>(server: &'a str, client_name: &'a str) -> EspMqttClient<'a> {
@@ -86,16 +104,27 @@ fn connect_mqtt<'a>(server: &'a str, client_name: &'a str) -> EspMqttClient<'a> 
     //subscribe to something
     let _ = mqtt_client.subscribe("EspNow/gw/radar", QoS::AtLeastOnce);
 
-    //publish something
-    let publication_result =
-        mqtt_client.publish("hellotest", QoS::AtLeastOnce, false, "hello".as_bytes());
-    match publication_result {
-        Ok(r) => log::info!("publication ok {r}"),
-        Err(x) => log::error!("publication failed {:?}", x),
-    }
-    mqtt_client //client needs to be returned to avoid it being disposed
+    //client needs to be returned to avoid it being disposed
+    mqtt_client
 }
 
+/// connectes to wifi
+///
+/// * connectes to a AP (Access Point)
+/// * connectes syncronous, waiting untill get an ip from the ap
+///
+/// # Panincs
+/// - configuring the phisical modem
+/// - connecting to the AP -> check credentials
+/// - getting an the interface up (getting an ip)
+///
+/// # Example
+/// ```
+/// let peripherals = Peripherals::take().unwrap();
+/// let sysloop = EspSystemEventLoop::take().unwrap();
+/// let nvs = EspDefaultNvsPartition::take().unwrap();
+/// let _ = wifi_sync_connect(peripherals.modem,sysloop, nvs, "myssid", "mypasswd").unwrap();
+/// ```
 fn wifi_sync_connect<'a>(
     modem: Modem,
     sysloop: esp_idf_svc::eventloop::EspEventLoop<esp_idf_svc::eventloop::System>,
