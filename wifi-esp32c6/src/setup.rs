@@ -6,7 +6,7 @@ pub struct Setup {
     pub ssid: &'static str,
     #[default("")]
     pub password: &'static str,
-    #[default("")]
+    #[default("mqtt://192.168.0.1:1883")]
     pub mqtt_server: &'static str,
 }
 

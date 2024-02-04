@@ -39,7 +39,7 @@ where
             match msg {
                 Err(e) => log::error!("mqtt message error {}", e),
                 Ok(m) => {
-                    log::info!("mqtt event: {:?}", m.payload());
+                    log::trace!("mqtt event: {:?}", m.payload());
                     match m.payload() {
                         EventPayload::Connected(_) => {
                             log::info!("connection status updated to connected");
@@ -87,10 +87,6 @@ pub struct LoggerEventHandler;
 impl EventHandler for LoggerEventHandler {
     fn handle(&mut self, topic: Option<&str>, payload: &[u8]) -> () {
         let msg = String::from_utf8_lossy(payload);
-        log::info!(
-            "recibed message in topic {:?} with payload {:?}",
-            topic,
-            msg
-        );
+        log::info!("got message in topic {:?} with payload {:?}", topic, msg);
     }
 }
