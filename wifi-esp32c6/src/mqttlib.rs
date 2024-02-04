@@ -10,13 +10,22 @@ use std::thread::{self};
 /// * It requires being already connected to a network (ie: wife).
 /// * Then it waits (blocking) until the connection is performed.
 /// * A new thread (in eventloop) is created to attend the connection in the background
+/// * An event_handler to process the incoming messages. For example `LoggerEventHandler` whill log
+/// the payload and topic, but you should create your own
 ///
 /// # example
 ///
 /// ```  
-///    let mut client = connect_mqtt("mqtt://192.168.0.100", "my_client_name");
+///    let event_handler = LoggerEventHandler {};
+///    let mut client = connect_mqtt("mqtt://192.168.0.100", "my_client_name", event_handler);
 ///    client.publish ("my_topic", QoS::AtLeastOnce, false, "hello world".as_bytes()).unwrap();
 /// ```
+///
+/// #more
+///
+/// thread is created and last until the internal thread of the mqtt server dies.
+/// when this treads dies, then `next()` also dies and everything is ok
+/// to disconnect use the function `disconnect_mqtt`
 pub fn connect_mqtt<'a, EH>(
     server: &'a str,
     client_name: &'a str,
