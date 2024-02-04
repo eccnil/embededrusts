@@ -7,9 +7,14 @@ use embedded_svc::{
     mqtt::client::{EventPayload, QoS},
     wifi::{AuthMethod, ClientConfiguration, Configuration},
 };
-use esp_idf_hal::{modem::Modem, peripherals::Peripherals, sys::EspError};
+use esp_idf_hal::{
+    modem::Modem,
+    peripherals::Peripherals,
+    sys::{esp_mqtt_client_stop, EspError},
+};
 use esp_idf_svc::{
     eventloop::EspSystemEventLoop,
+    handle::RawHandle,
     mqtt::client::{EspMqttClient, MqttClientConfiguration},
     nvs::EspDefaultNvsPartition,
     wifi::EspWifi,
@@ -64,12 +69,16 @@ fn main() {
         Err(x) => log::error!("publication failed {:?}", x),
     }
 
-    //subscribe to something
+    // subscribe to something
     let _ = client.subscribe("EspNow/gw/radar", QoS::AtLeastOnce);
 
-    loop {
-        sleep(Duration::from_millis(100));
-    }
+    // attend during some thime incomming events
+    sleep(Duration::from_secs(10));
+
+    //disconnect
+    disconnect_mqtt(client);
+
+    //and halt
 }
 
 /// Connects to mqtt server.
@@ -84,7 +93,6 @@ fn main() {
 ///    let mut client = connect_mqtt("mqtt://192.168.0.100", "my_client_name");
 ///    client.publish ("my_topic", QoS::AtLeastOnce, false, "hello world".as_bytes()).unwrap();
 /// ```
-//TODO: como parametro una lista de topics
 //TODO: aceptar una funcion como parametro que atienda las subscripciones
 fn connect_mqtt<'a>(server: &'a str, client_name: &'a str) -> EspMqttClient<'a> {
     //mqtt client creation
@@ -127,6 +135,19 @@ fn connect_mqtt<'a>(server: &'a str, client_name: &'a str) -> EspMqttClient<'a> 
 
     //client needs to be returned to avoid it being disposed
     mqtt_client
+}
+
+/// disconnects from mqtt gracefully
+///
+/// * last will message will not appear
+/// * the trhread created in connect_mqtt is destroyed
+/// * the client varible is taked and disposed
+/// * no more events will be received.
+fn disconnect_mqtt(client: EspMqttClient) {
+    let client = RawHandle::handle(&client);
+    unsafe {
+        esp_mqtt_client_stop(client);
+    }
 }
 
 /// connectes to wifi
