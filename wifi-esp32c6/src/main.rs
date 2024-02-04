@@ -4,7 +4,7 @@ use std::{
 };
 
 use embedded_svc::{
-    mqtt::client::QoS,
+    mqtt::client::{EventPayload, QoS},
     wifi::{AuthMethod, ClientConfiguration, Configuration},
 };
 use esp_idf_hal::{modem::Modem, peripherals::Peripherals, sys::EspError};
@@ -46,8 +46,10 @@ fn main() {
     let nvs = EspDefaultNvsPartition::take().unwrap();
     let modem = peripherals.modem;
 
+    //connect to wifi
     let _wifi = wifi_sync_connect(modem, sysloop, nvs, ssid, password).unwrap();
 
+    //connect to mqtt
     let mut client = connect_mqtt(setup.mqtt_server, "esptest");
 
     // publish something
@@ -61,6 +63,9 @@ fn main() {
         Ok(r) => log::info!("publication ok {r}"),
         Err(x) => log::error!("publication failed {:?}", x),
     }
+
+    //subscribe to something
+    let _ = client.subscribe("EspNow/gw/radar", QoS::AtLeastOnce);
 
     loop {
         sleep(Duration::from_millis(100));
@@ -80,7 +85,6 @@ fn main() {
 ///    client.publish ("my_topic", QoS::AtLeastOnce, false, "hello world".as_bytes()).unwrap();
 /// ```
 //TODO: como parametro una lista de topics
-//TODO: comprobar si el hilo creado muere o no cuando matamos el hilo principal
 //TODO: aceptar una funcion como parametro que atienda las subscripciones
 fn connect_mqtt<'a>(server: &'a str, client_name: &'a str) -> EspMqttClient<'a> {
     //mqtt client creation
@@ -88,7 +92,7 @@ fn connect_mqtt<'a>(server: &'a str, client_name: &'a str) -> EspMqttClient<'a> 
         client_id: client_name.into(),
         ..Default::default()
     };
-    let (mut mqtt_client, mut mqtt_connection) = EspMqttClient::new(server, &mqtt_config).unwrap();
+    let (mqtt_client, mut mqtt_connection) = EspMqttClient::new(server, &mqtt_config).unwrap();
 
     thread::spawn(move || {
         log::info!("entering mqtt loop");
@@ -96,13 +100,30 @@ fn connect_mqtt<'a>(server: &'a str, client_name: &'a str) -> EspMqttClient<'a> 
             let msg = mqtt_connection.next();
             match msg {
                 Err(e) => log::error!("mqtt message error {}", e),
-                Ok(m) => log::info!("mqtt event: {:?}", m.payload()),
+                Ok(m) => {
+                    log::info!("mqtt event: {:?}", m.payload());
+                    match m.payload() {
+                        EventPayload::Connected(_) => {
+                            log::info!("connection status updated to connected");
+                        }
+                        EventPayload::Received {
+                            id: _,
+                            topic,
+                            data,
+                            details: _,
+                        } => {
+                            log::info!(
+                                "message received to topic {:?} with content {:?}",
+                                topic,
+                                String::from_utf8_lossy(data)
+                            );
+                        }
+                        _ => (),
+                    }
+                }
             }
         }
     });
-
-    //subscribe to something
-    let _ = mqtt_client.subscribe("EspNow/gw/radar", QoS::AtLeastOnce);
 
     //client needs to be returned to avoid it being disposed
     mqtt_client
